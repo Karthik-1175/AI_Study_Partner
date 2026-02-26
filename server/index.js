@@ -2,57 +2,37 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
-import { protect } from "./middleware/authMiddleware.js";
 import studyRoutes from "./routes/studyRoutes.js";
+import { protect } from "./middleware/authMiddleware.js";
 
 const app = express();
 
-/* =============================
-   BULLETPROOF CORS CONFIG
-============================= */
+// Connect DB
+connectDB();
+
+// Middleware
+app.use(express.json());
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // allow requests with no origin (mobile apps, postman)
-      if (!origin) return callback(null, true);
-
-      // allow all vercel preview deployments
-      if (origin.includes("vercel.app")) {
-        return callback(null, true);
-      }
-
-      // allow localhost
-      if (origin.includes("localhost")) {
-        return callback(null, true);
-      }
-
-      return callback(null, true); // allow everything for now
-    },
+    origin: [
+      "http://localhost:5173",
+      "https://ai-study-partner-sable.vercel.app",
+    ],
     credentials: true,
   })
 );
 
-// handle preflight properly
-app.options("*", cors());
-
-/* =============================
-   MIDDLEWARE
-============================= */
-
-app.use(express.json());
-
-/* =============================
-   ROUTES
-============================= */
-
+// Test route
 app.get("/", (req, res) => {
   res.send("Server is running...");
 });
 
+// Protected test
 app.get("/api/protected", protect, (req, res) => {
   res.json({
     success: true,
@@ -61,16 +41,16 @@ app.get("/api/protected", protect, (req, res) => {
   });
 });
 
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/study", studyRoutes);
 
-/* =============================
-   SERVER START
-============================= */
+// 404 handler (IMPORTANT FIX)
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
 
 const PORT = process.env.PORT || 5000;
-
-connectDB();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
