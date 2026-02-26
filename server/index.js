@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -11,27 +10,45 @@ import studyRoutes from "./routes/studyRoutes.js";
 
 const app = express();
 
-console.log("GROQ KEY:", process.env.GROQ_API_KEY);
-
-// ✅ CORS CONFIG (IMPORTANT)
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://ai-study-partner-sable.vercel.app",
-];
-
-import cors from "cors";
+/* =============================
+   BULLETPROOF CORS CONFIG
+============================= */
 
 app.use(
   cors({
-    origin: true, // allow all origins (safe for APIs)
+    origin: function (origin, callback) {
+      // allow requests with no origin (mobile apps, postman)
+      if (!origin) return callback(null, true);
+
+      // allow all vercel preview deployments
+      if (origin.includes("vercel.app")) {
+        return callback(null, true);
+      }
+
+      // allow localhost
+      if (origin.includes("localhost")) {
+        return callback(null, true);
+      }
+
+      return callback(null, true); // allow everything for now
+    },
     credentials: true,
   })
 );
 
-// Middleware
+// handle preflight properly
+app.options("*", cors());
+
+/* =============================
+   MIDDLEWARE
+============================= */
+
 app.use(express.json());
 
-// Test route
+/* =============================
+   ROUTES
+============================= */
+
 app.get("/", (req, res) => {
   res.send("Server is running...");
 });
@@ -44,9 +61,12 @@ app.get("/api/protected", protect, (req, res) => {
   });
 });
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/study", studyRoutes);
+
+/* =============================
+   SERVER START
+============================= */
 
 const PORT = process.env.PORT || 5000;
 
