@@ -3,6 +3,7 @@ import API from "../api/axios";
 
 function History() {
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchHistory();
@@ -10,24 +11,28 @@ function History() {
 
   const fetchHistory = async () => {
     try {
-      const { data } = await API.get("/study");
-      setHistory(data.data);
+      const { data } = await API.get("/api/study");
+      setHistory(data.data || []);
     } catch (error) {
-      console.error(error);
+      console.error("History fetch error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await API.delete(`/study/${id}`);
+      await API.delete(`/api/study/${id}`);
 
-      // Remove from UI instantly
-      setHistory(history.filter((item) => item._id !== id));
+      // Remove instantly from UI
+      setHistory((prev) => prev.filter((item) => item._id !== id));
     } catch (error) {
-      console.error(error);
+      console.error("Delete error:", error);
       alert("Error deleting item");
     }
   };
+
+  if (loading) return <p>Loading history...</p>;
 
   return (
     <div>
