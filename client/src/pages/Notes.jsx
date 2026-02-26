@@ -9,12 +9,24 @@ function Notes() {
 
   return (
     <div>
-      <h1>📘 Notes</h1>
-      <p style={{ marginTop: "20px", lineHeight: "1.6" }}>
+      <h2 style={{ marginBottom: "20px" }}>
+        📘 {currentStudy.topic} ({currentStudy.difficulty})
+      </h2>
+
+      <div style={contentStyle}>
         {currentStudy.notes}
-      </p>
+      </div>
     </div>
   );
 }
+
+const contentStyle = {
+  background: "#1f2937",
+  padding: "20px",
+  borderRadius: "10px",
+  lineHeight: "1.8",
+  fontSize: "16px",
+  whiteSpace: "pre-line", // 👈 VERY IMPORTANT
+};
 
 export default Notes;
