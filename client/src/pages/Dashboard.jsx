@@ -24,7 +24,8 @@ function Dashboard() {
     setErrorMsg("");
 
     try {
-      const { data } = await API.post("/study/generate", {
+      // ✅ FIXED: Added await
+      const { data } = await API.post("/api/study/generate", {
         topic,
         difficulty,
       });
@@ -33,16 +34,19 @@ function Dashboard() {
         throw new Error(data.message);
       }
 
-      // Save in context
+      // Save study data in context
       setCurrentStudy(data.data);
 
-      // Optional: Auto navigate to notes
+      // Navigate to notes page
       navigate("notes");
 
     } catch (error) {
       console.error("Generate Error:", error);
+
       setErrorMsg(
-        error.response?.data?.message || "Error generating study material"
+        error.response?.data?.message ||
+        error.message ||
+        "Error generating study material"
       );
     } finally {
       setLoading(false);
@@ -81,7 +85,6 @@ function Dashboard() {
         <p style={{ color: "#f87171", marginTop: "15px" }}>{errorMsg}</p>
       )}
 
-      {/* Navigation Section */}
       <div style={navContainer}>
         <button style={navButton} onClick={() => navigate("notes")}>
           📘 View Notes
