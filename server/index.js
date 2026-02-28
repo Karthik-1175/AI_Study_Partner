@@ -19,10 +19,7 @@ app.use(express.json());
 
 app.use(
   cors({
-   origin: [
-  "http://localhost:5173",
-  "https://ai-study-partner-git-master-karthik-1175s-projects.vercel.app",
-],
+    origin: "*",  // allow all origins
     credentials: true,
   })
 );
